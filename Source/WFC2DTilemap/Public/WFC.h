@@ -20,6 +20,15 @@ struct FIsTileObserved {
 	}
 };
 
+USTRUCT()
+struct FGreaterEntropyThan {
+	GENERATED_BODY()
+		bool operator()(ATileWave* FirstTileWave, ATileWave* SecondTileWave)
+	{
+		return FirstTileWave->GetEntropy() > SecondTileWave->GetEntropy();
+	}
+};
+
 UCLASS()
 class WFC2DTILEMAP_API AWFC : public AActor
 {
@@ -105,6 +114,7 @@ public:
 private:
 	void PrintOutputTilemapState();
 	void CreateTextureFromOutputTilemap();
-
+	bool SaveBitmapAsPNG(int32 sizeX, int32 sizeY, const TArray<FColor>& bitmapData, const FString& filePath);
+	inline static bool ConstPredicate(ATileWave& ip1, ATileWave& ip2);
 
 };

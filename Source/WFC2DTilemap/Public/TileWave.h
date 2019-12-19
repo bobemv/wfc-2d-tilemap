@@ -5,7 +5,18 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "Tile.h"
+#include "TileRelations.h"
 #include "TileWave.generated.h"
+
+USTRUCT()
+struct FTileWavePossibility {
+	GENERATED_BODY()
+
+	UPROPERTY()
+	ESymmetryType Symmetry;
+	UPROPERTY()
+	int Rotation;
+};
 
 UCLASS()
 class WFC2DTILEMAP_API ATileWave : public AActor
@@ -14,23 +25,48 @@ class WFC2DTILEMAP_API ATileWave : public AActor
 	
 public:
 
-	UPROPERTY()
+	UPROPERTY(VisibleAnywhere)
 	TArray<ATile*> PossibleTiles;
 
-	UPROPERTY()
+	UPROPERTY(VisibleAnywhere)
 	ATile* SelectedTile;
 
-	UPROPERTY()
+	UPROPERTY(VisibleAnywhere)
+	ATileWave* TileNorth;
+	UPROPERTY(VisibleAnywhere)
+	ATileWave* TileWest;
+	UPROPERTY(VisibleAnywhere)
+	ATileWave* TileSouth;
+	UPROPERTY(VisibleAnywhere)
+	ATileWave* TileEast;
+
+	UPROPERTY(VisibleAnywhere)
 	bool bObserved;
 
-	UPROPERTY()
+	UPROPERTY(VisibleAnywhere)
 	int X;
 
-	UPROPERTY()
+	UPROPERTY(VisibleAnywhere)
 	int Y;
 
-	UPROPERTY()
+	UPROPERTY(VisibleAnywhere)
 	int Id;
+
+	UPROPERTY(VisibleAnywhere)
+	int Rotation;
+
+	UPROPERTY(VisibleAnywhere)
+	class UStaticMeshComponent* StaticMeshComponent;
+
+	UPROPERTY(EditAnywhere, Category = "Tile | Properties")
+	float ScaleZ;
+
+	UPROPERTY(EditAnywhere, Category = "Tile | Properties")
+	int CellSizeX;
+
+	UPROPERTY(EditAnywhere, Category = "Tile | Properties")
+	int CellSizeY;
+
 public:	
 	ATileWave();
 	// Sets default values for this actor's properties
@@ -45,5 +81,21 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 	virtual void ToString();
+	void ObserveTile(TileRelations TileRelations);
+
+	void TileNorthHasBeenUpdated();
+	void TileWestHasBeenUpdated();
+	void TileSouthHasBeenUpdated();
+	void TileEastHasBeenUpdated();
+	float GetEntropy();
+
+	FORCEINLINE void SetTileNorth(ATileWave* NewTileNorth) { TileNorth = NewTileNorth; };
+	FORCEINLINE void SetTileWest(ATileWave* NewTileWest) { TileWest = NewTileWest; };
+	FORCEINLINE void SetTileSouth(ATileWave* NewTileSouth) { TileSouth = NewTileSouth; };
+	FORCEINLINE void SetTileEast(ATileWave* NewTileEast) { TileEast = NewTileEast; };
+
+private:
+	uint8 ChangeFaceMaskDependingOnRotation(uint8 FaceMask);
+	int Mod(int x, int N);
 
 };

@@ -10,9 +10,28 @@ UENUM()
 enum class ESymmetryType : uint8 {
 	X,
 	T,
-	I,
-	L,
-	Diagonal
+	MAX
+};
+
+UENUM()
+enum class ETileFaces : uint8 {
+	North,
+	West,
+	South,
+	East,
+};
+
+USTRUCT()
+struct FRelation {
+
+	GENERATED_BODY()
+public:
+	UPROPERTY()
+	ESymmetryType FirstTileSimmetry;
+	UPROPERTY()
+	ESymmetryType SecondTileSimmetry;
+	UPROPERTY()
+	uint16 RelationMask;
 };
 
 UCLASS()
@@ -28,7 +47,12 @@ public:
 	UTexture2D* Image;
 
 	UPROPERTY(EditAnywhere)
-	ESymmetryType Symmetry;
+	class UMaterialInterface* Material;
+
+	UPROPERTY(EditAnywhere)
+	ESymmetryType Simmetry;
+
+
 public:	
 	// Sets default values for this actor's properties
 	ATile();

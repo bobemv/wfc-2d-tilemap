@@ -7,6 +7,11 @@
 #include "TileWave.h"
 #include "AssetRegistryModule.h"
 #include "Misc/DateTime.h"
+#include "HighResScreenshot.h"
+#include "ImageUtils.h"
+#include "FileHelper.h"
+#include "Engine/World.h"
+#include "TileRelations.h"
 
 // Sets default values
 AWFC::AWFC()
@@ -58,16 +63,53 @@ void AWFC::CreateTilemap()
 		for (int x = 0; x < Width; x++)
 		{
 			int Position = (y * Width + x);
-			ATileWave* NewTileWave = NewObject<ATileWave>(this);
+			//ATileWave* NewTileWave = NewObject<ATileWave>(this);
+			//return (ATileWave*)(GetWorld()->SpawnActor(ATileWave::StaticClass(), NAME_None, GetActorLocation(), GetActorRotation(), NULL, false, false, NULL, NULL));
+			ATileWave* NewTileWave = GetWorld()->SpawnActor<ATileWave>(ATileWave::StaticClass(), GetTransform(), FActorSpawnParameters());
+
 			NewTileWave->Init(x, y, Position, Tiles);
+			//NewTileWave->Spawn();
 			OutputTilemap.Add(NewTileWave);
 			//NewTileWave->ToString();
+
+			
+		}
+	}
+
+	for (int y = 0; y < Height; y++)
+	{
+		for (int x = 0; x < Width; x++)
+		{
+			int Position = (y * Width + x);
+			int PositionNorth = ((y + 1) * Width + x);
+			int PositionWest = (y * Width + x - 1);
+			int PositionSouth = ((y - 1) * Width + x);
+			int PositionEast = (y * Width + (x + 1));
+
+			if (PositionNorth >= 0 && PositionNorth < Height * Width && (y + 1) < Height)
+			{
+				OutputTilemap[Position]->SetTileNorth(OutputTilemap[PositionNorth]);
+			}
+
+			if (PositionWest >= 0 && PositionWest < Height * Width && (x - 1) >= 0)
+			{
+				OutputTilemap[Position]->SetTileWest(OutputTilemap[PositionWest]);
+			}
+
+			if (PositionSouth >= 0 && PositionSouth < Height * Width && (y - 1) >= 0)
+			{
+				OutputTilemap[Position]->SetTileSouth(OutputTilemap[PositionSouth]);
+			}
+			if (PositionEast >= 0 && PositionEast < Height * Width && (x + 1) < Width)
+			{
+				OutputTilemap[Position]->SetTileEast(OutputTilemap[PositionEast]);
+			}
 		}
 	}
 
 	int MaxIterations = 5000;
 	int CurrentIterations = 0;
-
+	TileRelations TileRelations;
 	//LOOP
 	while (true)
 	{
@@ -88,8 +130,11 @@ void AWFC::CreateTilemap()
 		{
 			break;
 		}
-		int IndexNextTileWave = FMath::RandRange(0, UnobservedTilesWave.Num() - 1);
-		UE_LOG(LogTemp, Warning, TEXT("WFC | Index next tilewave: %d"), IndexNextTileWave);
+		//FGreaterEntropyThan GreaterEntropyThanFunction;
+		UnobservedTilesWave.Sort(ConstPredicate);
+		//int IndexNextTileWave = FMath::RandRange(0, UnobservedTilesWave.Num() - 1);
+		int IndexNextTileWave = 0;
+		UE_LOG(LogTemp, Warning, TEXT("WFC | Index next tilewave: %d"), UnobservedTilesWave[IndexNextTileWave]->Id);
 
 		// Collapse. Select a possible Tile for this Tilewave depending on certain condition. Possible conditions:
 			// Random tile
@@ -98,8 +143,9 @@ void AWFC::CreateTilemap()
 			// OR/AND not using input tilemap and assigning a "symmetry type" to each tile
 
 		int IndexSelectedTile = FMath::RandRange(0, UnobservedTilesWave[IndexNextTileWave]->PossibleTiles.Num() - 1);
-		UnobservedTilesWave[IndexNextTileWave]->SelectedTile = UnobservedTilesWave[IndexNextTileWave]->PossibleTiles[IndexSelectedTile];
-		UnobservedTilesWave[IndexNextTileWave]->bObserved = true;
+		UnobservedTilesWave[IndexNextTileWave]->ObserveTile(TileRelations);
+
+
 		// (Propagation phase)
 			// Propagate information to the rest of tiles to reduce their possibilities by doing
 				// Constrain neighbour tiles by reducing its possibilities. Possibilities can NOT be zero for a TileWave. If it happens so, backtrack this step and select other tile for the current Tilewave. Repeat this process as necessary.
@@ -114,7 +160,7 @@ void AWFC::CreateTilemap()
 	}
 
 	// Return output
-	CreateTextureFromOutputTilemap();
+	//CreateTextureFromOutputTilemap();
 			
 
 
@@ -140,21 +186,22 @@ void AWFC::CreateTextureFromOutputTilemap()
 	//Creating the UTexture2D object
 	FString TextureName = "WFCOutput_";
 	TextureName.Append(FString::FromInt(FDateTime::Now().ToUnixTimestamp()));
+	TextureName.Append(".png");
 	FString PackageName = TEXT("/Game/ProceduralTextures/");
-	PackageName += TextureName;
-	UPackage* Package = CreatePackage(NULL, *PackageName);
-	Package->FullyLoad();
+	//PackageName += TextureName;
+	//UPackage* Package = CreatePackage(NULL, *PackageName);
+	//Package->FullyLoad();
 
-	UTexture2D* NewTexture = NewObject<UTexture2D>(Package, *TextureName, RF_Public | RF_Standalone | RF_MarkAsRootSet);
+	//UTexture2D* NewTexture = NewObject<UTexture2D>(Package, *TextureName, RF_Public | RF_Standalone | RF_MarkAsRootSet);
 
 	//Filling the texture with our data
 	// - Configuring texture
-	NewTexture->AddToRoot();				// This line prevents garbage collection of the texture
+	/*NewTexture->AddToRoot();				// This line prevents garbage collection of the texture
 	NewTexture->PlatformData = new FTexturePlatformData();	// Then we initialize the PlatformData
 	NewTexture->PlatformData->SizeX = WidthPixels;
 	NewTexture->PlatformData->SizeY = HeightPixels;
 	NewTexture->PlatformData->NumSlices = 1;
-	NewTexture->PlatformData->PixelFormat = EPixelFormat::PF_B8G8R8A8;
+	NewTexture->PlatformData->PixelFormat = EPixelFormat::PF_B8G8R8A8;*/
 
 	// - Getting the data for our texture
 	/* ---- 1 ----
@@ -171,7 +218,7 @@ void AWFC::CreateTextureFromOutputTilemap()
 		}
 	}*/
 
-
+	TArray<FColor> OutBMP;
 	int NewTextureWidhtPixels = Width * TextureDimension;
 	int NewTexturHeightPixels = Height * TextureDimension;
 	int NewTextureTotalPixels = NewTextureWidhtPixels * NewTexturHeightPixels;
@@ -181,7 +228,9 @@ void AWFC::CreateTextureFromOutputTilemap()
 	int TileRowTotalPixels = TileTotalPixels * Width;
 	int TileRowTotalPixelsByColor = TileRowTotalPixels * 4;
 
-	uint8* Pixels = new uint8[NewTextureTotalPixelsByColor];
+	OutBMP.SetNumUninitialized(NewTextureWidhtPixels * NewTexturHeightPixels);
+
+	//uint8* Pixels = new uint8[NewTextureTotalPixelsByColor];
 	for (int32 IndexTilesY = 0; IndexTilesY < Height; IndexTilesY++)
 	{
 		for (int32 IndexTilesX = 0; IndexTilesX < Width; IndexTilesX++)
@@ -205,7 +254,7 @@ void AWFC::CreateTextureFromOutputTilemap()
 			}
 
 
-			FTexture2DMipMap* MyMipMap = &TextureTile->PlatformData->Mips[3];
+			FTexture2DMipMap* MyMipMap = &TextureTile->PlatformData->Mips[0];
 			FUntypedBulkData* RawImageData = &MyMipMap->BulkData;
 			FColor* FormatedImageData = static_cast<FColor*>(RawImageData->Lock(LOCK_READ_ONLY));
 
@@ -229,7 +278,7 @@ void AWFC::CreateTextureFromOutputTilemap()
 					IndexPixelTileX
 					????*/
 
-					int IndexPixelOutput = IndexTilesY * TileRowTotalPixelsByColor + IndexTilesX * TextureDimension * 4 + IndexPixelTileY * TextureDimension * Width * 4 + IndexPixelTileX * 4;
+					int IndexPixelOutput = IndexTilesY * TileRowTotalPixels + IndexTilesX * TextureDimension + IndexPixelTileY * TextureDimension * Width + IndexPixelTileX;
 
 					/*
 					Pixels[OutputTexturePixelStart + 4 * IndexPixel] = PixelColor.R;
@@ -238,18 +287,28 @@ void AWFC::CreateTextureFromOutputTilemap()
 					Pixels[OutputTexturePixelStart + 4 * IndexPixel + 3] = PixelColor.A;
 					*/
 
-					Pixels[IndexPixelOutput] = PixelColor.B;
-					Pixels[IndexPixelOutput + 1] = PixelColor.G;
-					Pixels[IndexPixelOutput + 2] = PixelColor.R;
-					Pixels[IndexPixelOutput + 3] = PixelColor.A;
+					//Pixels[IndexPixelOutput] = PixelColor.B;
+					//Pixels[IndexPixelOutput + 1] = PixelColor.G;
+					//Pixels[IndexPixelOutput + 2] = PixelColor.R;
+					//Pixels[IndexPixelOutput + 3] = PixelColor.A;
+					OutBMP[IndexPixelOutput] = FormatedImageData[0];
 					// Do the job with the pixel
 				}
 			}
 
-			TextureTile->PlatformData->Mips[3].BulkData.Unlock();
+			TextureTile->PlatformData->Mips[0].BulkData.Unlock();
 
 		}
 	}
+
+	//FIntPoint DestSize(NewTextureWidhtPixels, NewTexturHeightPixels);
+
+	FString ResultPath = "";
+	//FHighResScreenshotConfig& HighResScreenshotConfig = GetHighResScreenshotConfig();
+	//SaveBitmapAsPNG(NewTextureWidhtPixels, NewTexturHeightPixels, OutBMP, ResultPath);
+	SaveBitmapAsPNG(NewTextureWidhtPixels, NewTexturHeightPixels, OutBMP, PackageName);
+	
+	/*
 
 	// - populating our texture with our data
 	// Allocate first mipmap.
@@ -273,7 +332,20 @@ void AWFC::CreateTextureFromOutputTilemap()
 
 	FString PackageFileName = FPackageName::LongPackageNameToFilename(PackageName, FPackageName::GetAssetPackageExtension());
 	bool bSaved = UPackage::SavePackage(Package, NewTexture, EObjectFlags::RF_Public | EObjectFlags::RF_Standalone, *PackageFileName, GError, nullptr, true, true, SAVE_NoError);
+	*/
 
-	delete[] Pixels;	// Don't forget to free the memory here
 
+	//delete[] Pixels;	// Don't forget to free the memory here
+
+}
+
+bool AWFC::SaveBitmapAsPNG(int32 sizeX, int32 sizeY, const TArray<FColor>& bitmapData, const FString& filePath) {
+	TArray<uint8> compressedBitmap;
+	FImageUtils::CompressImageArray(sizeX, sizeY, bitmapData, compressedBitmap);
+	return FFileHelper::SaveArrayToFile(compressedBitmap, *filePath);
+}
+
+bool AWFC::ConstPredicate(ATileWave& ip1, ATileWave& ip2)
+{
+	return (ip1.GetEntropy() < ip2.GetEntropy());
 }
