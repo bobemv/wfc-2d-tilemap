@@ -192,29 +192,29 @@ TArray<FSymmetryRelation> TileRelations::GetAllSymmetryRelationsByTileSymmetry(E
 
 bool TileRelations::IsValidTileSymmetriesAndFaces(ESymmetryType FirstTileSymmetry, ESymmetryType SecondTileSymmetry, ETileFaces FirstTileFace, ETileFaces SecondTileFace)
 {
-	UE_LOG(LogTemp, Warning, TEXT("TileRelations | Is Valid? FirsTileSymmetry: %d, SecondTileSymmetry: %d, FaceFirstTile: %d, FaceSecondTile: %d"), FirstTileSymmetry, SecondTileSymmetry, FirstTileFace, SecondTileFace);
+	//UE_LOG(LogTemp, Warning, TEXT("TileRelations | Is Valid? FirsTileSymmetry: %d, SecondTileSymmetry: %d, FaceFirstTile: %d, FaceSecondTile: %d"), FirstTileSymmetry, SecondTileSymmetry, FirstTileFace, SecondTileFace);
 
 	uint32 RelationMask = SymmetryRelations[(int)FirstTileSymmetry * (int)ESymmetryType::MAX + (int)SecondTileSymmetry].RelationMask;
 	uint32 EvaluationMask = (1 << ((4 * (int)FirstTileFace) + (int)SecondTileFace));
-	UE_LOG(LogTemp, Warning, TEXT("TileRelations | Is Valid? Relation Mask: %d, Evaluation Mask: %d"), RelationMask, EvaluationMask);
+	//UE_LOG(LogTemp, Warning, TEXT("TileRelations | Is Valid? Relation Mask: %d, Evaluation Mask: %d"), RelationMask, EvaluationMask);
 
 	return (RelationMask & EvaluationMask) > 0;
 }
 
 bool TileRelations::IsValidTileZonesAndFaces(EZoneType FirstTileZone, EZoneType SecondTileZone, ETileFaces FirstTileFace, ETileFaces SecondTileFace)
 {
-	UE_LOG(LogTemp, Warning, TEXT("TileRelations | Is Valid? FirsTileSymmetry: %d, SecondTileZone: %d, FaceFirstTile: %d, FaceSecondTile: %d"), FirstTileZone, SecondTileZone, FirstTileFace, SecondTileFace);
+	//UE_LOG(LogTemp, Warning, TEXT("TileRelations | Is Valid? FirsTileSymmetry: %d, SecondTileZone: %d, FaceFirstTile: %d, FaceSecondTile: %d"), FirstTileZone, SecondTileZone, FirstTileFace, SecondTileFace);
 
 	uint32 RelationMask = ZoneRelations[(int)FirstTileZone * (int)EZoneType::MAX + (int)SecondTileZone].RelationMask;
 	uint32 EvaluationMask = (1 << ((4 * (int)FirstTileFace) + (int)SecondTileFace));
-	UE_LOG(LogTemp, Warning, TEXT("TileRelations | Is Valid? Relation Mask: %d, Evaluation Mask: %d"), RelationMask, EvaluationMask);
+	//UE_LOG(LogTemp, Warning, TEXT("TileRelations | Is Valid? Relation Mask: %d, Evaluation Mask: %d"), RelationMask, EvaluationMask);
 
 	return (RelationMask & EvaluationMask) > 0;
 }
 
 bool TileRelations::IsValidTileAllRelations(ESymmetryType FirstTileSymmetry, ESymmetryType SecondTileSymmetry, EZoneType FirstTileZone, EZoneType SecondTileZone, ETileFaces FirstTileFace, ETileFaces SecondTileFace)
 {
-	IsValidTileSymmetriesAndFaces(FirstTileSymmetry, SecondTileSymmetry, FirstTileFace, SecondTileFace) && IsValidTileZonesAndFaces(FirstTileZone, SecondTileZone, FirstTileFace, SecondTileFace);
+	return IsValidTileSymmetriesAndFaces(FirstTileSymmetry, SecondTileSymmetry, FirstTileFace, SecondTileFace) && IsValidTileZonesAndFaces(FirstTileZone, SecondTileZone, FirstTileFace, SecondTileFace);
 }
 
 
