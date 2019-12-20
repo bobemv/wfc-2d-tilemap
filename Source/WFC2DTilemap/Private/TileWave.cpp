@@ -67,68 +67,48 @@ void ATileWave::ObserveTile(TileRelations TileRelations)
 
 	UE_LOG(LogTemp, Warning, TEXT("TileWave | Observing Tile Wave in X: %d, Y: %d"), X, Y);
 
-	TArray<FRelation> RelationsTileNorth, RelationsTileWest, RelationsTileSouth, RelationsTileEast;
-	int FaceTileNorthToTile = 0, FaceTileWestToTile = 0, FaceTileSouthToTile = 0, FaceTileEastToTile = 0;
+	TArray<FSymmetryRelation> RelationsTileNorth, RelationsTileWest, RelationsTileSouth, RelationsTileEast;
+	ETileFaces FaceTileNorthToTile = ETileFaces::North , FaceTileWestToTile = ETileFaces::North, FaceTileSouthToTile = ETileFaces::North, FaceTileEastToTile = ETileFaces::North;
 	TArray<ESymmetryType> PossibleTileSimmetriesDependingOnNeighbours;
 
 	if (TileNorth != nullptr && TileNorth->SelectedTile != nullptr)
 	{
-		RelationsTileNorth = TileRelations.GetAllRelationsByTileSimmetry(TileNorth->SelectedTile->Simmetry);
-		for (FRelation RelationTileNorth : RelationsTileNorth)
-		{
-			PossibleTileSimmetriesDependingOnNeighbours.AddUnique(RelationTileNorth.SecondTileSimmetry);
-		}
-		FaceTileNorthToTile = Mod(2 - TileNorth->Rotation, 4); // O NORTH, 1 WEST, 2 SOUTH, 3 EAST - 0 NO ROTATION, 1 ROTATION 90º COUNTERCLOCKWISE, 2 ROTATION 180º COUNTERCLOCKWISE, 3 ROTATION 270º COUNTERCLOCKWISE, 
-		UE_LOG(LogTemp, Warning, TEXT("TileWave | Tile in North exists. Symmetry: %d. Face To Tile: %d"), TileNorth->SelectedTile->Simmetry, FaceTileNorthToTile);
+		FaceTileNorthToTile = ETileFaces(Mod(2 - (int)TileNorth->Rotation, 4)); // O NORTH, 1 WEST, 2 SOUTH, 3 EAST - 0 NO ROTATION, 1 ROTATION 90º COUNTERCLOCKWISE, 2 ROTATION 180º COUNTERCLOCKWISE, 3 ROTATION 270º COUNTERCLOCKWISE, 
+		UE_LOG(LogTemp, Warning, TEXT("TileWave | Tile in North exists. Symmetry: %d. Face To Tile: %d"), TileNorth->SelectedTile->Symmetry, FaceTileNorthToTile);
 	}
 
 	if (TileWest != nullptr && TileWest->SelectedTile != nullptr)
 	{
-		RelationsTileWest = TileRelations.GetAllRelationsByTileSimmetry(TileWest->SelectedTile->Simmetry);
-		for (FRelation RelationTileWest : RelationsTileWest)
-		{
-			PossibleTileSimmetriesDependingOnNeighbours.AddUnique(RelationTileWest.SecondTileSimmetry);
-		}
-		FaceTileWestToTile = Mod(3 - TileWest->Rotation, 4); //0000 0001 EAST
-		UE_LOG(LogTemp, Warning, TEXT("TileWave | Tile in West exists. Symmetry: %d. Face To Tile: %d"), TileWest->SelectedTile->Simmetry, FaceTileWestToTile);
-
+		FaceTileWestToTile = ETileFaces(Mod(3 - (int)TileWest->Rotation, 4)); //0000 0001 EAST
+		UE_LOG(LogTemp, Warning, TEXT("TileWave | Tile in West exists. Symmetry: %d. Face To Tile: %d"), TileWest->SelectedTile->Symmetry, FaceTileWestToTile);
 	}
 
 	if (TileSouth != nullptr && TileSouth->SelectedTile != nullptr)
 	{
-		RelationsTileSouth = TileRelations.GetAllRelationsByTileSimmetry(TileSouth->SelectedTile->Simmetry);
-		for (FRelation RelationTileSouth : RelationsTileSouth)
-		{
-			PossibleTileSimmetriesDependingOnNeighbours.AddUnique(RelationTileSouth.SecondTileSimmetry);
-		}
-		FaceTileSouthToTile = Mod(0 - TileSouth->Rotation, 4); //0000 1000 NORTH
-		UE_LOG(LogTemp, Warning, TEXT("TileWave | Tile in South exists. Symmetry: %d. Face To Tile: %d"), TileSouth->SelectedTile->Simmetry, FaceTileSouthToTile);
+		FaceTileSouthToTile = ETileFaces(Mod(0 - (int)TileSouth->Rotation, 4)); //0000 1000 NORTH
+		UE_LOG(LogTemp, Warning, TEXT("TileWave | Tile in South exists. Symmetry: %d. Face To Tile: %d"), TileSouth->SelectedTile->Symmetry, FaceTileSouthToTile);
 	}
 	if (TileEast != nullptr && TileEast->SelectedTile != nullptr)
 	{
-		RelationsTileEast = TileRelations.GetAllRelationsByTileSimmetry(TileEast->SelectedTile->Simmetry);
-		for (FRelation RelationTileEast : RelationsTileEast)
-		{
-
-			PossibleTileSimmetriesDependingOnNeighbours.AddUnique(RelationTileEast.SecondTileSimmetry);
-		}
-		FaceTileEastToTile = Mod(1 - TileEast->Rotation, 4); //0000 0100 WEST
-		UE_LOG(LogTemp, Warning, TEXT("TileWave | Tile in East exists. Symmetry: %d. Face To Tile: %d"), TileEast->SelectedTile->Simmetry, FaceTileEastToTile);
+		FaceTileEastToTile = ETileFaces(Mod(1 - (int)TileEast->Rotation, 4)); //0000 0100 WEST
+		UE_LOG(LogTemp, Warning, TEXT("TileWave | Tile in East exists. Symmetry: %d. Face To Tile: %d"), TileEast->SelectedTile->Symmetry, FaceTileEastToTile);
 	}
 
 	ATile* TileObserved = nullptr;
 	int RotationIndex = 0;
+	int SymmetryTypeIndex = 0;
 	TArray<FTileWavePossibility> TileWavePossibilities;
 
-	PossibleTileSimmetriesDependingOnNeighbours = { ESymmetryType::T, ESymmetryType::X };
+	PossibleTileSimmetriesDependingOnNeighbours = { ESymmetryType::T, ESymmetryType::L,  ESymmetryType::I, ESymmetryType::X };
 	UE_LOG(LogTemp, Warning, TEXT("TileWave | Number of Possible Tile Symmetries: %d"), PossibleTileSimmetriesDependingOnNeighbours.Num());
 
 	//Point where can be RANDOMIZED or DETERMINISTIC
-	for (ESymmetryType PossibleSimmetry : PossibleTileSimmetriesDependingOnNeighbours)
+	for (SymmetryTypeIndex = 0; SymmetryTypeIndex < PossibleTileSimmetriesDependingOnNeighbours.Num(); SymmetryTypeIndex++)
 	{
+		ESymmetryType PossibleSymmetry = PossibleTileSimmetriesDependingOnNeighbours[SymmetryTypeIndex];
 		bool isSymmetryValid = false;
 		RotationIndex = 0;
-		UE_LOG(LogTemp, Warning, TEXT("TileWave | Possible Tile Symmetry: %d"), PossibleSimmetry);
+		UE_LOG(LogTemp, Warning, TEXT("TileWave | Possible Tile Symmetry: %d"), PossibleSymmetry);
 
 		for (RotationIndex = 0; RotationIndex < 4; RotationIndex++)
 		{
@@ -137,28 +117,28 @@ void ATileWave::ObserveTile(TileRelations TileRelations)
 			bool isSymmetryRotationValid = true;
 			if (TileNorth != nullptr && TileNorth->SelectedTile != nullptr)
 			{
-				isSymmetryRotationValid &= TileRelations.IsValidTileSimmetriesAndFaces(PossibleSimmetry, TileNorth->SelectedTile->Simmetry, Mod(0 - RotationIndex, 4), FaceTileNorthToTile);
+				isSymmetryRotationValid &= TileRelations.IsValidTileSymmetriesAndFaces(PossibleSymmetry, TileNorth->SelectedTile->Symmetry, (ETileFaces)Mod(0 - RotationIndex, 4), FaceTileNorthToTile);
 			}
 
 			if (TileWest != nullptr && TileWest->SelectedTile != nullptr)
 			{
-				isSymmetryRotationValid &= TileRelations.IsValidTileSimmetriesAndFaces(PossibleSimmetry, TileWest->SelectedTile->Simmetry, Mod(1 - RotationIndex, 4), FaceTileWestToTile);
+				isSymmetryRotationValid &= TileRelations.IsValidTileSymmetriesAndFaces(PossibleSymmetry, TileWest->SelectedTile->Symmetry, (ETileFaces)Mod(1 - RotationIndex, 4), FaceTileWestToTile);
 			}
 
 			if (TileSouth != nullptr && TileSouth->SelectedTile != nullptr)
 			{
-				isSymmetryRotationValid &= TileRelations.IsValidTileSimmetriesAndFaces(PossibleSimmetry, TileSouth->SelectedTile->Simmetry, Mod(2 - RotationIndex, 4), FaceTileSouthToTile);
+				isSymmetryRotationValid &= TileRelations.IsValidTileSymmetriesAndFaces(PossibleSymmetry, TileSouth->SelectedTile->Symmetry, (ETileFaces)Mod(2 - RotationIndex, 4), FaceTileSouthToTile);
 			}
 			if (TileEast != nullptr && TileEast->SelectedTile != nullptr)
 			{
-				isSymmetryRotationValid &= TileRelations.IsValidTileSimmetriesAndFaces(PossibleSimmetry, TileEast->SelectedTile->Simmetry, Mod(3 - RotationIndex, 4), FaceTileEastToTile);
+				isSymmetryRotationValid &= TileRelations.IsValidTileSymmetriesAndFaces(PossibleSymmetry, TileEast->SelectedTile->Symmetry, (ETileFaces)Mod(3 - RotationIndex, 4), FaceTileEastToTile);
 			}
 			if (isSymmetryRotationValid)
 			{
-				UE_LOG(LogTemp, Warning, TEXT("TileWave | Tile Symmetry FOUND: %d with Rotation: %d"), PossibleSimmetry, RotationIndex);
+				UE_LOG(LogTemp, Warning, TEXT("TileWave | Tile Symmetry FOUND: %d with Rotation: %d (Face: %d)"), PossibleSymmetry, RotationIndex, ETileFaces(RotationIndex));
 				FTileWavePossibility TileWavePossibility;
-				TileWavePossibility.Symmetry = PossibleSimmetry;
-				TileWavePossibility.Rotation = RotationIndex;
+				TileWavePossibility.Symmetry = PossibleSymmetry;
+				TileWavePossibility.Rotation = ETileFaces(RotationIndex);
 				TileWavePossibilities.Add(TileWavePossibility);
 			}
 		}
@@ -170,13 +150,13 @@ void ATileWave::ObserveTile(TileRelations TileRelations)
 		FTileWavePossibility TileWavePossibilitySelected = TileWavePossibilities[IndexTileWavePossibilitySelected];
 		ESymmetryType SymmetrySelected = TileWavePossibilitySelected.Symmetry;
 		TArray<ATile*> PossibleTilesMatchingSymmetry;
-		UE_LOG(LogTemp, Warning, TEXT("TileWave | Searching Tile with Symmetry found"));
+		UE_LOG(LogTemp, Warning, TEXT("TileWave | Searching Tile with Symmetry found: %d"), SymmetrySelected);
 		//GET RANDOM OR FIRST TILE WHICH MATCHES SYMMETRY
 		for (int i = 0; i < PossibleTiles.Num(); i++)
 		{
 			UE_LOG(LogTemp, Warning, TEXT("TileWave | Possibb Tile with Symmetry: %d"), PossibleTiles[i]->Index);
 
-			if (PossibleTiles[i]->Simmetry == SymmetrySelected)
+			if (PossibleTiles[i]->Symmetry == SymmetrySelected)
 			{
 				PossibleTilesMatchingSymmetry.Add(PossibleTiles[i]);
 				UE_LOG(LogTemp, Warning, TEXT("TileWave | Tile SELECTED: %d"), PossibleTiles[i]->Index);
@@ -190,7 +170,7 @@ void ATileWave::ObserveTile(TileRelations TileRelations)
 			int IndexTileWaveSelected = FMath::RandRange(0, PossibleTilesMatchingSymmetry.Num() - 1);
 			SelectedTile = PossibleTilesMatchingSymmetry[IndexTileWaveSelected];
 			StaticMeshComponent->SetMaterial(0, SelectedTile->Material);
-			AddActorWorldRotation(FRotator(0, -90 * TileWavePossibilitySelected.Rotation, 0));
+			AddActorWorldRotation(FRotator(0, -90 * (int)TileWavePossibilitySelected.Rotation, 0));
 			Rotation = TileWavePossibilitySelected.Rotation;
 		}
 	}

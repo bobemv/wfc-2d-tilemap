@@ -12,10 +12,12 @@ public:
 	TileRelations();
 	~TileRelations();
 
-	TArray<FRelation> Relations;
+	TArray<FSymmetryRelation> SymmetryRelations;
+	TArray<FZoneRelation> ZoneRelations;
 
-	uint32 GetRelationTileSimmetries(ESymmetryType FirstTileSimmetry, ESymmetryType SecondTileSimmetry);
-	TArray<FRelation> GetAllRelationsByTileSimmetry(ESymmetryType TileSimmetry);
-	bool IsValidTileSimmetriesAndFaces(ESymmetryType FirstTileSimmetry, ESymmetryType SecondTileSimmetry, int FirstTileFace, int SecondTileFace);
-
+	uint32 GetRelationTileSymmetries(ESymmetryType FirstTileSymmetry, ESymmetryType SecondTileSymmetry);
+	TArray<FSymmetryRelation> GetAllSymmetryRelationsByTileSymmetry(ESymmetryType TileSymmetry);
+	bool IsValidTileSymmetriesAndFaces(ESymmetryType FirstTileSymmetry, ESymmetryType SecondTileSymmetry, ETileFaces FirstTileFace, ETileFaces SecondTileFace);
+	bool IsValidTileZonesAndFaces(EZoneType FirstTileZone, EZoneType SecondTileZone, ETileFaces FirstTileFace, ETileFaces SecondTileFace);
+	bool IsValidTileAllRelations(ESymmetryType FirstTileSymmetry, ESymmetryType SecondTileSymmetry, EZoneType FirstTileZone, EZoneType SecondTileZone, ETileFaces FirstTileFace, ETileFaces SecondTileFace);
 };

@@ -115,6 +115,6 @@ private:
 	void PrintOutputTilemapState();
 	void CreateTextureFromOutputTilemap();
 	bool SaveBitmapAsPNG(int32 sizeX, int32 sizeY, const TArray<FColor>& bitmapData, const FString& filePath);
-	inline static bool ConstPredicate(ATileWave& ip1, ATileWave& ip2);
+	inline static bool LessEntropyComparator(ATileWave& ip1, ATileWave& ip2);
 
 };

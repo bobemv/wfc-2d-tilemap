@@ -15,7 +15,9 @@ struct FTileWavePossibility {
 	UPROPERTY()
 	ESymmetryType Symmetry;
 	UPROPERTY()
-	int Rotation;
+	EZoneType Zone;
+	UPROPERTY()
+	ETileFaces Rotation;
 };
 
 UCLASS()
@@ -53,7 +55,7 @@ public:
 	int Id;
 
 	UPROPERTY(VisibleAnywhere)
-	int Rotation;
+	ETileFaces Rotation;
 
 	UPROPERTY(VisibleAnywhere)
 	class UStaticMeshComponent* StaticMeshComponent;

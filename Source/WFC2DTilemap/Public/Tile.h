@@ -10,6 +10,16 @@ UENUM()
 enum class ESymmetryType : uint8 {
 	X,
 	T,
+	L,
+	I,
+	MAX
+};
+
+UENUM()
+enum class EZoneType : uint8 {
+	Grass,
+	Sand,
+	GrassSand,
 	MAX
 };
 
@@ -19,17 +29,31 @@ enum class ETileFaces : uint8 {
 	West,
 	South,
 	East,
+	MAX
 };
 
 USTRUCT()
-struct FRelation {
+struct FSymmetryRelation {
 
 	GENERATED_BODY()
 public:
 	UPROPERTY()
-	ESymmetryType FirstTileSimmetry;
+	ESymmetryType FirstTileSymmetry;
 	UPROPERTY()
-	ESymmetryType SecondTileSimmetry;
+	ESymmetryType SecondTileSymmetry;
+	UPROPERTY()
+	uint16 RelationMask;
+};
+
+USTRUCT()
+struct FZoneRelation {
+
+	GENERATED_BODY()
+public:
+	UPROPERTY()
+	EZoneType FirstTileZone;
+	UPROPERTY()
+	EZoneType SecondTileZone;
 	UPROPERTY()
 	uint16 RelationMask;
 };
@@ -44,13 +68,13 @@ public:
 	int Index;
 
 	UPROPERTY(EditAnywhere)
-	UTexture2D* Image;
-
-	UPROPERTY(EditAnywhere)
 	class UMaterialInterface* Material;
 
 	UPROPERTY(EditAnywhere)
-	ESymmetryType Simmetry;
+	ESymmetryType Symmetry;
+
+	UPROPERTY(EditAnywhere)
+	EZoneType Zone;
 
 
 public:	
