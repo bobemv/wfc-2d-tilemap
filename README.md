@@ -1,3 +1,6 @@
-# WFC2DTilemap
+# WFC 2D Tilemap
 
-Developed with Unreal Engine 4
+<img src='./Content/Gifs/WFCGIF20200109.gif'>
+
+Implemented the tile version of Wave Function Collapse specified in: https://github.com/mxgmn/WaveFunctionCollapse.
+
